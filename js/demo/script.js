@@ -1,13 +1,21 @@
 "use strict";
 
 var objects = [];
+var textarea;
+var canvas;
 var context;
 
+/**
+ * Render each of the objects onto the canvas
+ *
+ * @returns { void }
+ */
 function renderDigraphs() {
     context.clearRect(0, 0, canvas.width, canvas.height);
+    context.save();
 
     objects.forEach(function (object) {
-        context.beginPath();
+        context.restore();
 
         context.strokeStyle = "#0F0";
         if (
@@ -18,27 +26,36 @@ function renderDigraphs() {
                 );
             })
         ) {
+            object.conflict = true;
+
             context.strokeStyle = "#F00";
         } else if (object.hover) {
+            object.conflict = false;
+
             context.strokeStyle = "#00F";
+        } else {
+            object.conflict = false;
         }
 
-        object.digraph.getEdges().forEach(function (vertex) {
-            context.lineTo(vertex.x, vertex.y);
-        });
+        object.digraph.draw(context, true);
 
-        context.closePath();
         context.stroke();
     });
 }
 
+/**
+ * Handle mouse events for hover/dragging
+ *
+ * @param { MouseEvent } event from user
+ * @returns { void }
+ */
 function mouseEvent(event) {
     var x = event.clientX - canvas.offsetLeft;
     var y = event.clientY - canvas.offsetTop;
 
     switch (event.type) {
         case "mousemove":
-            objects.forEach(function (object) {
+            objects.forEach(function (object, object_i) {
                 if (object.move) {
                     var diff = {
                         x: object.move.x + x - object.digraph.vertices[0].x,
@@ -53,6 +70,14 @@ function mouseEvent(event) {
                             return vertex;
                         }
                     );
+
+                    if (object_i === 8) {
+                        textarea.value = object.digraph.vertices
+                            .map(function (vertex) {
+                                return vertex.x + "," + vertex.y;
+                            })
+                            .join("\n");
+                    }
                 }
             });
             break;
@@ -95,14 +120,39 @@ function mouseEvent(event) {
     });
 }
 
+/**
+ * Update the custom shape
+ *
+ * @returns { void }
+ */
+function updateCustom() {
+    var vertices = textarea.value
+        .trim()
+        .split("\n")
+        .map(function (line) {
+            line = line.trim().split(",");
+
+            return {
+                x: line[0],
+                y: line[1]
+            };
+        });
+
+    if (vertices.length < 2) vertices = [{}, {}];
+
+    objects[objects.length - 1].digraph.vertices = vertices;
+}
+
 window.addEventListener("DOMContentLoaded", function () {
+    textarea = document.getElementById("custom");
+    textarea.addEventListener("keyup", updateCustom);
+
     document.body.style.margin = "0";
     document.body.style.overflow = "hidden";
 
-    var canvas = document.getElementById("canvas");
+    canvas = document.getElementById("canvas");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
     canvas.addEventListener("mousedown", mouseEvent);
     canvas.addEventListener("mouseup", mouseEvent);
     canvas.addEventListener("mousemove", mouseEvent);
@@ -112,6 +162,7 @@ window.addEventListener("DOMContentLoaded", function () {
     context.imageSmoothingEnabled = false;
     context.translate(0.5, 0.5);
     context.lineWidth = 1;
+    context.fillStyle = "#FFF";
 
     objects.push(
         {
@@ -265,9 +316,37 @@ window.addEventListener("DOMContentLoaded", function () {
                     y: 530
                 }
             ])
+        },
+        {
+            digraph: new Digraph([
+                {
+                    x: 150,
+                    y: 750
+                },
+                {
+                    x: 200,
+                    y: 750
+                }
+            ])
+        },
+        {
+            digraph: new Digraph([
+                {
+                    x: 350,
+                    y: 750
+                },
+                {
+                    x: 400,
+                    y: 750
+                }
+            ])
+        },
+        {
+            digraph: new Digraph([{}, {}])
         }
     );
 
     setInterval(renderDigraphs, 10);
+    updateCustom();
     renderDigraphs();
 });
