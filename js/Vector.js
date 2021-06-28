@@ -52,9 +52,124 @@ function Vector(x, y, z) {
         );
     };
 
-    that.x = x ? parseFloat(x) : 0;
-    that.y = y ? parseFloat(y) : 0;
-    that.z = z ? parseFloat(z) : 0;
+    /**
+     * Start listening for events emitted by the Vector
+     *
+     * @param { string } event to listen for
+     * @param { function } callback to run on event
+     * @returns { this } current Vector object
+     */
+    that.addEventListener = function (event, callback) {
+        if (event in that.events) {
+            that.events[event].push(callback);
+        }
+
+        return that;
+    };
+
+    /**
+     * Stop listening for events emitted by the Vector
+     *
+     * @param { string } event to stop listening for
+     * @param { function } callback to stop running on event
+     * @returns { this } current Vector object
+     */
+    that.removeEventListener = function (event, callback) {
+        if (event in that.events) {
+            that.events[event] = that.events[event].filter(function (listener) {
+                return callback !== listener;
+            });
+        }
+
+        return that;
+    };
+
+    Object.defineProperties(that, {
+        x: {
+            get: function () {
+                return that._x;
+            },
+            set: function (x) {
+                x = x ? parseFloat(x) : 0;
+
+                var difference = x - that._x;
+
+                that._x = x;
+
+                if (difference !== 0) {
+                    that.events.x.forEach(function (listener) {
+                        listener(
+                            new CustomEvent("x", {
+                                detail: {
+                                    difference: difference
+                                }
+                            }),
+                            that
+                        );
+                    });
+                }
+            }
+        },
+        y: {
+            get: function () {
+                return that._y;
+            },
+            set: function (y) {
+                y = y ? parseFloat(y) : 0;
+
+                var difference = y - that._y;
+
+                that._y = y;
+
+                if (difference !== 0) {
+                    that.events.y.forEach(function (listener) {
+                        listener(
+                            new CustomEvent("y", {
+                                detail: {
+                                    difference: difference
+                                }
+                            }),
+                            that
+                        );
+                    });
+                }
+            }
+        },
+        z: {
+            get: function () {
+                return that._z;
+            },
+            set: function (z) {
+                z = z ? parseFloat(z) : 0;
+
+                var difference = z - that._z;
+
+                that._z = z;
+
+                if (difference !== 0) {
+                    that.events.z.forEach(function (listener) {
+                        listener(
+                            new CustomEvent("z", {
+                                detail: {
+                                    difference: difference
+                                }
+                            }),
+                            that
+                        );
+                    });
+                }
+            }
+        }
+    });
+
+    that.events = {
+        x: [],
+        y: [],
+        z: []
+    };
+    that.x = x;
+    that.y = y;
+    that.z = z;
 }
 
 /**
