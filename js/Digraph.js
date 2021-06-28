@@ -110,17 +110,14 @@ function Digraph(vertices) {
      * Determine whether digraphs are touching bounding boxes
      *
      * @param { Digraph } digraph to test against
-     * @param { boolean } [edge] increase size by 1 pixel
      * @returns { boolean } whether digraphs are bounding
      */
-    that.isBounding = function (digraph, edge) {
-        edge = edge ? 1 : 0;
-
+    that.isBounding = function (digraph) {
         return (
-            digraph.bounds.x.min - edge <= that.bounds.x.max + edge &&
-            digraph.bounds.x.max + edge >= that.bounds.x.min - edge &&
-            digraph.bounds.y.min - edge <= that.bounds.y.max + edge &&
-            digraph.bounds.y.max + edge >= that.bounds.y.min - edge
+            digraph.bounds.x.min <= that.bounds.x.max &&
+            digraph.bounds.x.max >= that.bounds.x.min &&
+            digraph.bounds.y.min <= that.bounds.y.max &&
+            digraph.bounds.y.max >= that.bounds.y.min
         );
     };
 
@@ -158,8 +155,8 @@ function Digraph(vertices) {
 
                 // digraphs have a gap between them
                 if (
-                    Math.min(project.max + 1, digraph_project.max) -
-                        Math.max(project.min - 1, digraph_project.min) <
+                    Math.min(project.max, digraph_project.max) -
+                        Math.max(project.min, digraph_project.min) <
                     0
                 ) {
                     return false;
