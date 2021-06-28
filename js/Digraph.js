@@ -11,8 +11,31 @@ function Digraph(vertices) {
      *
      * @returns { this } current digraph
      */
-    that.updateBounds = function () {
+    function updateBounds() {
+        if (that.vertices.length === 2) {
+            var radius = that.vertices[0].distanceTo(that.vertices[1]);
+
+            that._bounds = {
+                radius: radius,
+                x: {
+                    min: that.vertices[0].x - radius,
+                    max: that.vertices[0].x + radius
+                },
+                y: {
+                    min: that.vertices[0].y - radius,
+                    max: that.vertices[0].y + radius
+                },
+                z: {
+                    min: that.vertices[0].z,
+                    max: that.vertices[0].z
+                }
+            };
+
+            return that;
+        }
+
         that._bounds = {
+            radius: null,
             x: {
                 min: Infinity,
                 max: -Infinity
@@ -27,7 +50,7 @@ function Digraph(vertices) {
             }
         };
 
-        that._vertices.forEach(function (vertex) {
+        that.vertices.forEach(function (vertex) {
             that._bounds.x.min = Math.min(that._bounds.x.min, vertex.x);
             that._bounds.x.max = Math.max(that._bounds.x.max, vertex.x);
 
@@ -39,7 +62,7 @@ function Digraph(vertices) {
         });
 
         return that;
-    };
+    }
 
     /**
      * Retrieve the vertices with the start included twice
@@ -59,16 +82,25 @@ function Digraph(vertices) {
      * @returns { { min: number, max: number } } projection bounds
      */
     that.projectToVector = function (vector) {
+        var dot = vector.dot(that.vertices[0]);
         var project = {
-            min: Infinity,
-            max: -Infinity
+            min: dot,
+            max: dot
         };
 
-        var dot;
-        for (var vertex_i = 0; vertex_i < that.vertices.length; vertex_i += 1) {
-            dot = vector.dot(that.vertices[vertex_i]);
-            project.min = Math.min(project.min, dot);
-            project.max = Math.max(project.max, dot);
+        if (that.bounds.radius) {
+            project.min -= that.bounds.radius;
+            project.max += that.bounds.radius;
+        } else {
+            for (
+                var vertex_i = 1;
+                vertex_i < that.vertices.length;
+                vertex_i += 1
+            ) {
+                dot = vector.dot(that.vertices[vertex_i]);
+                project.min = Math.min(project.min, dot);
+                project.max = Math.max(project.max, dot);
+            }
         }
 
         return project;
@@ -92,6 +124,14 @@ function Digraph(vertices) {
         );
     };
 
+    that.getAxis = function (digraph, vertex1, vertex2) {
+        if (that.bounds.radius) {
+            return Vector.fromClosest(that.vertices[0], digraph.vertices);
+        }
+
+        return Vector.fromPerpendicular(vertex1, vertex2);
+    };
+
     /**
      * Determine whether digraphs are touching
      *
@@ -102,14 +142,18 @@ function Digraph(vertices) {
         // digraphs aren't even bounding
         if (!that.isBounding(digraph, true)) return false;
 
-        var edges = that.getEdges();
+        var target = that;
+
         for (var i = 0; i < 2; i += 1) {
+            var edges = target.getEdges();
+
             for (var edge_i = 0; edge_i < edges.length - 1; edge_i += 1) {
-                var axis = Vector.fromPerpendicular(
+                var axis = target.getAxis(
+                    digraph,
                     edges[edge_i],
                     edges[edge_i + 1]
                 );
-                var project = that.projectToVector(axis);
+                var project = target.projectToVector(axis);
                 var digraph_project = digraph.projectToVector(axis);
 
                 // digraphs have a gap between them
@@ -122,17 +166,66 @@ function Digraph(vertices) {
                 }
             }
 
-            edges = digraph.getEdges();
+            target = digraph;
+            digraph = that;
         }
 
         return true;
+    };
+
+    /**
+     * Draw the digraph onto the context, without stroke/fill
+     *
+     * @param { CanvasRenderingContext2D } context from canvas
+     * @param { boolean } [vertex_dots] whether to include vertex dots
+     * @returns { this } current digraph
+     */
+    that.draw = function (context, vertex_dots) {
+        context.beginPath();
+
+        if (that.bounds.radius) {
+            context.arc(
+                that.vertices[0].x,
+                that.vertices[0].y,
+                that.bounds.radius,
+                0,
+                2 * Math.PI
+            );
+
+            if (vertex_dots) {
+                context.fillRect(
+                    that.vertices[0].x - 1,
+                    that.vertices[0].y - 1,
+                    3,
+                    3
+                );
+                context.fillRect(
+                    that.vertices[1].x - 1,
+                    that.vertices[1].y - 1,
+                    3,
+                    3
+                );
+            }
+        } else {
+            that.getEdges().forEach(function (vertex) {
+                context.lineTo(vertex.x, vertex.y);
+
+                if (vertex_dots) {
+                    context.fillRect(vertex.x - 1, vertex.y - 1, 3, 3);
+                }
+            });
+        }
+
+        context.closePath();
+
+        return that;
     };
 
     Object.defineProperty(that, "bounds", {
         get: function () {
             return that._bounds;
         },
-        set: that.updateBounds
+        set: updateBounds
     });
 
     Object.defineProperty(that, "vertices", {
@@ -146,8 +239,8 @@ function Digraph(vertices) {
                 );
             }
 
-            if (vertices.length < 3) {
-                throw new Error("Digraphs must have at least three vertices");
+            if (vertices.length !== 2 && vertices.length < 3) {
+                throw new Error("Digraphs must have two/three+ vertices");
             }
 
             that._vertices = vertices.map(function (vertex) {
@@ -159,46 +252,37 @@ function Digraph(vertices) {
 
                 throw new Error("Unable to convert coordinates to Vector");
             });
-            that.updateBounds();
+            updateBounds();
 
             Object.defineProperties(that._vertices, {
-                map: {
-                    value: function () {
-                        var map = Array.prototype.map.apply(this, arguments);
-
-                        that.updateBounds();
-
-                        return map;
-                    }
-                },
                 pop: {
                     value: function () {
                         Array.prototype.pop.apply(this, arguments);
-                        that.updateBounds();
+                        updateBounds();
                     }
                 },
                 push: {
                     value: function () {
                         Array.prototype.push.apply(this, arguments);
-                        that.updateBounds();
+                        updateBounds();
                     }
                 },
                 shift: {
                     value: function () {
                         Array.prototype.shift.apply(this, arguments);
-                        that.updateBounds();
+                        updateBounds();
                     }
                 },
                 unpop: {
                     value: function () {
                         Array.prototype.unpop.apply(this, arguments);
-                        that.updateBounds();
+                        updateBounds();
                     }
                 },
                 unshift: {
                     value: function () {
                         Array.prototype.unshift.apply(this, arguments);
-                        that.updateBounds();
+                        updateBounds();
                     }
                 }
             });
