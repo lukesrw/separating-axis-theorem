@@ -65,17 +65,6 @@ function Digraph(vertices) {
     }
 
     /**
-     * Retrieve the vertices with the start included twice
-     *
-     * @returns { ( { x?: number, y?: number, z?: number } | Vector )[] } all vertices (plus start again)
-     */
-    that.getEdges = function () {
-        if (that.vertices.length < 2) return [];
-
-        return that.vertices.concat(that.vertices[0]);
-    };
-
-    /**
      * Calculate minimum and maximum points of projection
      *
      * @param { Vector } vector to project onto
@@ -142,8 +131,7 @@ function Digraph(vertices) {
         var target = that;
 
         for (var i = 0; i < 2; i += 1) {
-            var edges = target.getEdges();
-
+            var edges = target.vertices.concat(target.vertices[0]);
             for (var edge_i = 0; edge_i < edges.length - 1; edge_i += 1) {
                 var axis = target.getAxis(
                     digraph,
@@ -204,7 +192,7 @@ function Digraph(vertices) {
                 );
             }
         } else {
-            that.getEdges().forEach(function (vertex) {
+            that.vertices.forEach(function (vertex) {
                 context.lineTo(vertex.x, vertex.y);
 
                 if (vertex_dots) {
@@ -214,6 +202,29 @@ function Digraph(vertices) {
         }
 
         context.closePath();
+
+        return that;
+    };
+
+    /**
+     * Convert current digraph to circular approximation
+     *
+     * @returns { this } current digraph
+     */
+    that.toCircle = function () {
+        var x = Math.round((that.bounds.x.min + that.bounds.x.max) / 2);
+        var y = Math.round((that.bounds.y.min + that.bounds.y.max) / 2);
+
+        that.vertices = [
+            {
+                x: x,
+                y: y
+            },
+            {
+                x: x + (x > y ? x / 2 : y / 2),
+                y: y
+            }
+        ];
 
         return that;
     };
@@ -288,3 +299,51 @@ function Digraph(vertices) {
 
     that.vertices = vertices;
 }
+
+/**
+ * Create digraph approximation from image
+ *
+ * @param { HTMLImageElement } image to represent
+ * @returns { Digraph} of image
+ */
+Digraph.fromImage = function (image) {
+    var canvas = document.createElement("canvas");
+    var context = canvas.getContext("2d");
+
+    canvas.width = image.width;
+    canvas.height = image.height;
+
+    context.drawImage(image, 0, 0);
+
+    var meta = {};
+    for (var y = 0; y < canvas.height; y += 1) {
+        for (var x = 0; x < canvas.width; x += 1) {
+            var pixel = context.getImageData(x, y, 1, 1);
+            if (pixel.data[3]) {
+                if (!(y in meta)) {
+                    meta[y] = {
+                        min: Infinity,
+                        max: -Infinity
+                    };
+                }
+
+                meta[y].min = Math.min(meta[y].min, x);
+                meta[y].max = Math.max(meta[y].min, x);
+            }
+        }
+    }
+
+    var vertices = [];
+    var keys = Object.keys(meta);
+    var change = 1;
+    for (var i = 0; i > -1 && i < keys.length; i += change) {
+        vertices.push({
+            x: meta[keys[i]][change === 1 ? "min" : "max"],
+            y: keys[i]
+        });
+
+        if (i === keys.length - 1 && change === 1) change *= -1;
+    }
+
+    return new Digraph(vertices);
+};
