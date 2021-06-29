@@ -173,10 +173,11 @@ function Vector(x, y, z) {
 }
 
 /**
+ * Create Vector from perpendicular of two other vectors
  *
  * @param { { x?: number, y?: number, z?: number } | Vector } vector1 line start
  * @param { { x?: number, y?: number, z?: number } | Vector } vector2 line end
- * @returns { { x?: number, y?: number, z?: number } | Vector } new perpendicular vector
+ * @returns { Vector } new perpendicular vector
  */
 Vector.fromPerpendicular = function (vector1, vector2) {
     return new Vector(
@@ -185,6 +186,13 @@ Vector.fromPerpendicular = function (vector1, vector2) {
     ).normalize();
 };
 
+/**
+ * Create Vector from a given point to a set of vertices
+ *
+ * @param { { x?: number, y?: number, z?: number } | Vector } point to measure
+ * @param { Vector[] } vertices to loop through
+ * @returns { Vector } new closest vector
+ */
 Vector.fromClosest = function (point, vertices) {
     var closest = {
         vertex: null,
