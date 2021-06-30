@@ -23,12 +23,21 @@ function Vector(x, y, z) {
     };
 
     /**
+     * Calculate magnitude of Vector
+     *
+     * @returns { number }
+     */
+    that.getMagnitude = function () {
+        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+    };
+
+    /**
      * Return normalized form of Vector
      *
      * @returns { Vector } normalized vector
      */
     that.normalize = function () {
-        var magnitude = Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+        var magnitude = that.getMagnitude();
 
         if (magnitude === 0) return that;
 
