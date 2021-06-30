@@ -213,7 +213,9 @@ function Digraph(vertices) {
      */
     that.toCircle = function () {
         var x = Math.round((that.bounds.x.min + that.bounds.x.max) / 2);
+        var x_radius = Math.round(that.bounds.x.max - that.bounds.x.min);
         var y = Math.round((that.bounds.y.min + that.bounds.y.max) / 2);
+        var y_radius = Math.round(that.bounds.y.max - that.bounds.y.min);
 
         that.vertices = [
             {
@@ -221,8 +223,36 @@ function Digraph(vertices) {
                 y: y
             },
             {
-                x: x + (x > y ? x / 2 : y / 2),
+                x: x + (x > y ? x_radius : y_radius) / 2,
                 y: y
+            }
+        ];
+
+        return that;
+    };
+
+    /**
+     * Convert current digraph to bounds approximation
+     *
+     * @returns { this } current digraph
+     */
+    that.toBounds = function () {
+        that.vertices = [
+            {
+                x: that.bounds.x.min,
+                y: that.bounds.y.min
+            },
+            {
+                x: that.bounds.x.max,
+                y: that.bounds.y.min
+            },
+            {
+                x: that.bounds.x.max,
+                y: that.bounds.y.max
+            },
+            {
+                x: that.bounds.x.min,
+                y: that.bounds.y.max
             }
         ];
 
@@ -306,31 +336,54 @@ function Digraph(vertices) {
  * @param { HTMLImageElement } image to represent
  * @returns { Digraph} of image
  */
-Digraph.fromImage = function (image) {
+Digraph.fromImage = function (
+    image,
+    src_x,
+    src_y,
+    src_width,
+    src_height,
+    dest_width,
+    dest_height
+) {
     var canvas = document.createElement("canvas");
+    canvas.width = dest_width || src_width || image.width;
+    canvas.height = dest_height || src_height || image.height;
+
     var context = canvas.getContext("2d");
+    context.webkitImageSmoothingEnabled = false;
+    context.mozImageSmoothingEnabled = false;
+    context.imageSmoothingEnabled = false;
 
-    canvas.width = image.width;
-    canvas.height = image.height;
+    context.drawImage(
+        image,
+        src_x || 0,
+        src_y || 0,
+        src_width || image.width,
+        src_height || image.height,
+        0,
+        0,
+        dest_width || canvas.width,
+        dest_height || canvas.height
+    );
 
-    context.drawImage(image, 0, 0);
-
+    var data = context.getImageData(0, 0, canvas.width, canvas.height).data;
     var meta = {};
     for (var y = 0; y < canvas.height; y += 1) {
-        for (var x = 0; x < canvas.width; x += 1) {
-            var pixel = context.getImageData(x, y, 1, 1);
-            if (pixel.data[3]) {
-                if (!(y in meta)) {
-                    meta[y] = {
-                        min: Infinity,
-                        max: -Infinity
-                    };
-                }
+        if (!(y in meta)) {
+            meta[y] = {
+                min: Infinity,
+                max: -Infinity
+            };
+        }
 
+        for (var x = 0; x < canvas.width; x += 1) {
+            if (data[(y * canvas.width + x) * 4 + 3]) {
                 meta[y].min = Math.min(meta[y].min, x);
                 meta[y].max = Math.max(meta[y].min, x);
             }
         }
+
+        if (meta[y].min === Infinity) delete meta[y];
     }
 
     var vertices = [];
