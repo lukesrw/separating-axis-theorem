@@ -1,5 +1,7 @@
 # Separating Axis Theorem (SAT)
 
+### [Live Demo](https://lukesrw.github.io/separating-axis-theorem/)
+
 ## Description
 
 Separating Axis Theorem (SAT) is a collision detection method that uses vertices projected onto a shared axis to determine whether objects are touching or not, if there is a gap in this shared axis - the objects are not touching.
