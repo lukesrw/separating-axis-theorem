@@ -379,11 +379,20 @@ Digraph.fromImage = function (
         for (var x = 0; x < canvas.width; x += 1) {
             if (data[(y * canvas.width + x) * 4 + 3]) {
                 meta[y].min = Math.min(meta[y].min, x);
-                meta[y].max = Math.max(meta[y].min, x);
+                break;
             }
         }
 
-        if (meta[y].min === Infinity) delete meta[y];
+        if (meta[y].min === Infinity) {
+            delete meta[y];
+        } else {
+            for (var x = canvas.width; x > -1; x -= 1) {
+                if (data[(y * canvas.width + x) * 4 + 3]) {
+                    meta[y].max = Math.max(meta[y].max, x);
+                    break;
+                }
+            }
+        }
     }
 
     var vertices = [];
