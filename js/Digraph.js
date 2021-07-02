@@ -259,71 +259,72 @@ function Digraph(vertices) {
         return that;
     };
 
-    Object.defineProperty(that, "bounds", {
-        get: function () {
-            return that._bounds;
+    Object.defineProperties(that, {
+        bounds: {
+            get: function () {
+                return that._bounds;
+            },
+            set: updateBounds
         },
-        set: updateBounds
-    });
-
-    Object.defineProperty(that, "vertices", {
-        get: function () {
-            return that._vertices;
-        },
-        set: function (vertices) {
-            if (!Array.isArray(vertices)) {
-                throw new Error(
-                    "Vertices must be an array of Vectors/coordinates"
-                );
-            }
-
-            if (vertices.length !== 2 && vertices.length < 3) {
-                throw new Error("Digraphs must have two/three+ vertices");
-            }
-
-            that._vertices = vertices.map(function (vertex) {
-                if (vertex instanceof Vector) return vertex;
-
-                if (typeof vertex === "object") {
-                    return new Vector(vertex.x, vertex.y, vertex.z);
+        vertices: {
+            get: function () {
+                return that._vertices;
+            },
+            set: function (vertices) {
+                if (!Array.isArray(vertices)) {
+                    throw new Error(
+                        "Vertices must be an array of Vectors/coordinates"
+                    );
                 }
 
-                throw new Error("Unable to convert coordinates to Vector");
-            });
-            updateBounds();
-
-            Object.defineProperties(that._vertices, {
-                pop: {
-                    value: function () {
-                        Array.prototype.pop.apply(this, arguments);
-                        updateBounds();
-                    }
-                },
-                push: {
-                    value: function () {
-                        Array.prototype.push.apply(this, arguments);
-                        updateBounds();
-                    }
-                },
-                shift: {
-                    value: function () {
-                        Array.prototype.shift.apply(this, arguments);
-                        updateBounds();
-                    }
-                },
-                unpop: {
-                    value: function () {
-                        Array.prototype.unpop.apply(this, arguments);
-                        updateBounds();
-                    }
-                },
-                unshift: {
-                    value: function () {
-                        Array.prototype.unshift.apply(this, arguments);
-                        updateBounds();
-                    }
+                if (vertices.length !== 2 && vertices.length < 3) {
+                    throw new Error("Digraphs must have two/three+ vertices");
                 }
-            });
+
+                that._vertices = vertices.map(function (vertex) {
+                    if (vertex instanceof Vector) return vertex;
+
+                    if (typeof vertex === "object") {
+                        return new Vector(vertex.x, vertex.y, vertex.z);
+                    }
+
+                    throw new Error("Unable to convert coordinates to Vector");
+                });
+                updateBounds();
+
+                Object.defineProperties(that._vertices, {
+                    pop: {
+                        value: function () {
+                            Array.prototype.pop.apply(this, arguments);
+                            updateBounds();
+                        }
+                    },
+                    push: {
+                        value: function () {
+                            Array.prototype.push.apply(this, arguments);
+                            updateBounds();
+                        }
+                    },
+                    shift: {
+                        value: function () {
+                            Array.prototype.shift.apply(this, arguments);
+                            updateBounds();
+                        }
+                    },
+                    unpop: {
+                        value: function () {
+                            Array.prototype.unpop.apply(this, arguments);
+                            updateBounds();
+                        }
+                    },
+                    unshift: {
+                        value: function () {
+                            Array.prototype.unshift.apply(this, arguments);
+                            updateBounds();
+                        }
+                    }
+                });
+            }
         }
     });
 
