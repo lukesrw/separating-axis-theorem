@@ -331,10 +331,16 @@ function Digraph(vertices) {
 }
 
 /**
- * Create digraph approximation from image
+ * Create digraph approximation from image (or part of an image)
  *
  * @param { HTMLImageElement } image to represent
- * @returns { Digraph} of image
+ * @param { number } [src_x] to start image
+ * @param { number } [src_y] to start image
+ * @param { number } [src_width] to end image
+ * @param { number } [src_height] to end image
+ * @param { number } [dest_width] to display image
+ * @param { number } [dest_height] to display image
+ * @returns { Digraph } of image
  */
 Digraph.fromImage = function (
     image,
