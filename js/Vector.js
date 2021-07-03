@@ -69,11 +69,7 @@ function Vector(x, y, z) {
      * @returns { this } current Vector object
      */
     that.addEventListener = function (event, callback) {
-        if (event in that.events) {
-            that.events[event].push(callback);
-        }
-
-        return that;
+        return Events.prototype.addEventListener.call(that, event, callback);
     };
 
     /**
@@ -84,13 +80,7 @@ function Vector(x, y, z) {
      * @returns { this } current Vector object
      */
     that.removeEventListener = function (event, callback) {
-        if (event in that.events) {
-            that.events[event] = that.events[event].filter(function (listener) {
-                return callback !== listener;
-            });
-        }
-
-        return that;
+        return Events.prototype.removeEventListener.call(that, event, callback);
     };
 
     Object.defineProperties(that, {
@@ -106,15 +96,8 @@ function Vector(x, y, z) {
                 that._x = x;
 
                 if (difference !== 0) {
-                    that.events.x.forEach(function (listener) {
-                        listener(
-                            new CustomEvent("x", {
-                                detail: {
-                                    difference: difference
-                                }
-                            }),
-                            that
-                        );
+                    Events.prototype.emit.call(that, "x", {
+                        difference: difference
                     });
                 }
             }
@@ -131,15 +114,8 @@ function Vector(x, y, z) {
                 that._y = y;
 
                 if (difference !== 0) {
-                    that.events.y.forEach(function (listener) {
-                        listener(
-                            new CustomEvent("y", {
-                                detail: {
-                                    difference: difference
-                                }
-                            }),
-                            that
-                        );
+                    Events.prototype.emit.call(that, "y", {
+                        difference: difference
                     });
                 }
             }
@@ -156,15 +132,8 @@ function Vector(x, y, z) {
                 that._z = z;
 
                 if (difference !== 0) {
-                    that.events.z.forEach(function (listener) {
-                        listener(
-                            new CustomEvent("z", {
-                                detail: {
-                                    difference: difference
-                                }
-                            }),
-                            that
-                        );
+                    Events.prototype.emit.call(that, "z", {
+                        difference: difference
                     });
                 }
             }
