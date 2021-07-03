@@ -17,30 +17,26 @@ function renderDigraphs() {
     objects.forEach(function (object) {
         context.restore();
 
-        context.strokeStyle = "#0F0";
-        if (
-            objects.some(function (target) {
-                return (
-                    object !== target &&
-                    object.digraph.isTouching(target.digraph)
-                );
-            })
-        ) {
-            object.conflict = true;
+        object.conflict = objects.some(function (target) {
+            return (
+                object !== target && object.digraph.isTouching(target.digraph)
+            );
+        });
 
+        if (object.conflict) {
             context.strokeStyle = "#F00";
         } else if (object.hover) {
-            object.conflict = false;
-
             context.strokeStyle = "#00F";
         } else {
-            object.conflict = false;
+            context.strokeStyle = "#0F0";
         }
 
         object.digraph.draw(context, true);
 
         context.stroke();
     });
+
+    requestAnimationFrame(renderDigraphs);
 }
 
 /**
@@ -89,24 +85,13 @@ function mouseEvent(event) {
             break;
     }
 
-    var cursor = new Digraph([
+    var cursor = Digraph.fromPoint(
         {
             x: x,
             y: y
         },
-        {
-            x: x + 1,
-            y: y
-        },
-        {
-            x: x + 1,
-            y: y + 1
-        },
-        {
-            x: x,
-            y: y + 1
-        }
-    ]);
+        1
+    );
 
     objects.forEach(function (object) {
         object.hover = cursor.isTouching(object.digraph);
@@ -318,35 +303,28 @@ window.addEventListener("DOMContentLoaded", function () {
             ])
         },
         {
-            digraph: new Digraph([
+            digraph: Digraph.fromPoint(
                 {
                     x: 150,
                     y: 750
                 },
-                {
-                    x: 200,
-                    y: 750
-                }
-            ])
+                50
+            )
         },
         {
-            digraph: new Digraph([
+            digraph: Digraph.fromPoint(
                 {
                     x: 350,
                     y: 750
                 },
-                {
-                    x: 400,
-                    y: 750
-                }
-            ])
+                50
+            )
         },
         {
             digraph: new Digraph([{}, {}])
         }
     );
 
-    setInterval(renderDigraphs, 10);
     updateCustom();
-    renderDigraphs();
+    requestAnimationFrame(renderDigraphs);
 });
