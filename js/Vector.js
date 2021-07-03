@@ -62,6 +62,34 @@ function Vector(x, y, z) {
     };
 
     /**
+     * Increase this Vector by another Vector
+     *
+     * @param { { x?: number, y?: number, z?: number } | Vector } vector to add
+     * @returns { this } current vector
+     */
+    that.add = function (vector) {
+        that.x += vector.x || 0;
+        that.y += vector.y || 0;
+        that.z += vector.z || 0;
+
+        return that;
+    };
+
+    /**
+     * Decrease this Vector by another Vector
+     *
+     * @param { { x?: number, y?: number, z?: number } | Vector } vector to subtract
+     * @returns { this } current vector
+     */
+    that.subtract = function (vector) {
+        that.x -= vector.x || 0;
+        that.y -= vector.y || 0;
+        that.z -= vector.z || 0;
+
+        return that;
+    };
+
+    /**
      * Start listening for events emitted by the Vector
      *
      * @param { string } event to listen for
