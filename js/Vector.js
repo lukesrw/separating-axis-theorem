@@ -15,11 +15,9 @@ function Vector(x, y, z) {
      * @returns { number } dot product
      */
     that.dot = function (vector) {
-        return (
-            this.x * (vector.x || 0) +
-            this.y * (vector.y || 0) +
-            this.z * (vector.z || 0)
-        );
+        var { x, y, z } = that.clone().multiply(vector);
+
+        return x + y + z;
     };
 
     /**
@@ -28,24 +26,37 @@ function Vector(x, y, z) {
      * @returns { number }
      */
     that.getMagnitude = function () {
-        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+        return Math.sqrt(Math.pow(that.x, 2) + Math.pow(that.y, 2));
     };
 
     /**
-     * Return normalized form of Vector
+     * Multiply this Vector by another Vector
      *
-     * @returns { Vector } normalized vector
+     * @param { { x?: number, y?: number, z?: number } | Vector } vector to multiply by
+     * @returns { this } current Vector object
+     */
+    that.multiply = function (vector) {
+        that.x *= vector.x || 1;
+        that.y *= vector.y || 1;
+        that.z *= vector.z || 1;
+
+        return that;
+    };
+
+    /**
+     * Normalize the current Vector
+     *
+     * @returns { Vector } current Vector object
      */
     that.normalize = function () {
         var magnitude = that.getMagnitude();
 
         if (magnitude === 0) return that;
 
-        return new Vector(
-            this.x * (1 / magnitude),
-            this.y * (1 / magnitude),
-            this.z
-        );
+        return that.multiply({
+            x: 1 / magnitude,
+            y: 1 / magnitude
+        });
     };
 
     /**
@@ -62,10 +73,19 @@ function Vector(x, y, z) {
     };
 
     /**
+     * Create a clone of this Vector
+     *
+     * @returns { Vector } new cloned Vector
+     */
+    that.clone = function () {
+        return new Vector(that.x, that.y, that.z);
+    };
+
+    /**
      * Increase this Vector by another Vector
      *
      * @param { { x?: number, y?: number, z?: number } | Vector } vector to add
-     * @returns { this } current vector
+     * @returns { this } current Vector object
      */
     that.add = function (vector) {
         that.x += vector.x || 0;
@@ -79,7 +99,7 @@ function Vector(x, y, z) {
      * Decrease this Vector by another Vector
      *
      * @param { { x?: number, y?: number, z?: number } | Vector } vector to subtract
-     * @returns { this } current vector
+     * @returns { this } current Vector object
      */
     that.subtract = function (vector) {
         that.x -= vector.x || 0;
@@ -97,7 +117,15 @@ function Vector(x, y, z) {
      * @returns { this } current Vector object
      */
     that.addEventListener = function (event, callback) {
-        return Events.prototype.addEventListener.call(that, event, callback);
+        if (typeof Events === "function") {
+            return Events.prototype.addEventListener.call(
+                that,
+                event,
+                callback
+            );
+        }
+
+        return that;
     };
 
     /**
@@ -108,7 +136,15 @@ function Vector(x, y, z) {
      * @returns { this } current Vector object
      */
     that.removeEventListener = function (event, callback) {
-        return Events.prototype.removeEventListener.call(that, event, callback);
+        if (typeof Events === "function") {
+            return Events.prototype.removeEventListener.call(
+                that,
+                event,
+                callback
+            );
+        }
+
+        return that;
     };
 
     Object.defineProperties(that, {
@@ -123,7 +159,7 @@ function Vector(x, y, z) {
 
                 that._x = x;
 
-                if (difference !== 0) {
+                if (difference && typeof Events === "function") {
                     Events.prototype.emit.call(that, "x", {
                         difference: difference
                     });
@@ -141,7 +177,7 @@ function Vector(x, y, z) {
 
                 that._y = y;
 
-                if (difference !== 0) {
+                if (difference && typeof Events === "function") {
                     Events.prototype.emit.call(that, "y", {
                         difference: difference
                     });
@@ -159,7 +195,7 @@ function Vector(x, y, z) {
 
                 that._z = z;
 
-                if (difference !== 0) {
+                if (difference && typeof Events === "function") {
                     Events.prototype.emit.call(that, "z", {
                         difference: difference
                     });
@@ -202,8 +238,7 @@ Vector.fromPerpendicular = function (vector1, vector2) {
 Vector.fromClosest = function (point, vertices) {
     var closest = {
         vertex: null,
-        distance: Infinity,
-        delta: null
+        distance: Infinity
     };
 
     var distance;
@@ -212,12 +247,8 @@ Vector.fromClosest = function (point, vertices) {
         if (distance < closest.distance) {
             closest.distance = distance;
             closest.vertex = vertex;
-            closest.delta = {
-                x: vertex.x - point.x,
-                y: vertex.y - point.y
-            };
         }
     });
 
-    return new Vector(closest.delta.x, closest.delta.y).normalize();
+    return closest.vertex.clone().subtract(point).normalize();
 };
