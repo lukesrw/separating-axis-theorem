@@ -34,16 +34,13 @@ var square = new Digraph([
     }
 ]);
 
-var circle = new Digraph([
+var circle = Digraph.fromPoint(
     {
         x: 300,
         y: 150
     },
-    {
-        x: 400,
-        y: 150
-    }
-]);
+    100
+);
 
 square.isTouching(circle);
 ```
@@ -97,6 +94,19 @@ var point = Vector.fromClosest(
         )
     ]
 );
+```
+
+There's also an optional `Events.js` file which, if included, will add event listener functionality to a vector, allowing you to be notified of any changes to the coordinates; each event is simply named "x", "y", or "z":
+
+```js
+var point = new Vector(100, 100, 0);
+
+point.addEventListener("x", function (event, vector) {
+    console.log(point.x); // new value
+    console.log(vector.x); // new value (alternative)
+
+    console.log(event.detail.difference); // change value
+});
 ```
 
 ## Digraph
