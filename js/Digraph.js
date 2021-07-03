@@ -416,3 +416,20 @@ Digraph.fromImage = function (
 
     return new Digraph(vertices);
 };
+
+/**
+ * Create Digraph from point and a radius
+ *
+ * @param { { x?: number, y?: number, z?: number } | Vector } point to center around
+ * @param { number } [radius] of the circle (default: 1)
+ * @returns { Digraph } new circular Digraph
+ */
+Digraph.fromPoint = function (point, radius) {
+    return new Digraph([
+        point,
+        {
+            x: point.x + (radius || 1),
+            y: point.y
+        }
+    ]);
+};
