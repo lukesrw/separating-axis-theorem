@@ -8,7 +8,11 @@ function Events() {}
  * @returns { this } current object
  */
 Events.prototype.addEventListener = function (event, callback) {
-    if (event in this.events) this.events[event].push(callback);
+    if (event in this.events) {
+        this.events[event].push(callback);
+    } else {
+        throw new Error('Invalid Event: "' + event + '"');
+    }
 
     return this;
 };
@@ -25,6 +29,8 @@ Events.prototype.removeEventListener = function (event, callback) {
         this.events[event] = this.events[event].filter(function (listener) {
             return callback !== listener;
         });
+    } else {
+        throw new Error('Invalid Event: "' + event + '"');
     }
 
     return this;
@@ -47,6 +53,8 @@ Events.prototype.emit = function (event, detail) {
                 this
             );
         });
+    } else {
+        throw new Error('Invalid Event: "' + event + '"');
     }
 
     return this;
