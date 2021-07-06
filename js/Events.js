@@ -52,7 +52,7 @@ Events.prototype.emit = function (event, detail) {
                 }),
                 this
             );
-        });
+        }, this);
     } else {
         throw new Error('Invalid Event: "' + event + '"');
     }
