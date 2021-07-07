@@ -411,8 +411,8 @@ Digraph.fromImage = function (
     var change = 1;
     for (var i = 0; i > -1 && i < keys.length; i += change) {
         vertices.push({
-            x: meta[keys[i]][change === 1 ? "min" : "max"] * scale.x,
-            y: keys[i] * scale.y
+            x: meta[keys[i]][change === 1 ? "min" : "max"] * (scale.x || 1),
+            y: keys[i] * (scale.y || 1)
         });
 
         if (i === keys.length - 1 && change === 1) {
