@@ -352,9 +352,13 @@ Digraph.fromImage = function (
     dest_width,
     dest_height
 ) {
+    var scale = {
+        x: dest_width / src_width,
+        y: dest_height / src_height
+    };
     var canvas = document.createElement("canvas");
-    canvas.width = dest_width || src_width || image.width;
-    canvas.height = dest_height || src_height || image.height;
+    canvas.width = src_width || image.width;
+    canvas.height = src_height || image.height;
 
     var context = canvas.getContext("2d");
     context.webkitImageSmoothingEnabled = false;
@@ -365,12 +369,12 @@ Digraph.fromImage = function (
         image,
         src_x || 0,
         src_y || 0,
-        src_width || image.width,
-        src_height || image.height,
+        canvas.width,
+        canvas.width,
         0,
         0,
-        dest_width || canvas.width,
-        dest_height || canvas.height
+        canvas.width,
+        canvas.height
     );
 
     var data = context.getImageData(0, 0, canvas.width, canvas.height).data;
@@ -393,7 +397,7 @@ Digraph.fromImage = function (
         if (meta[y].min === Infinity) {
             delete meta[y];
         } else {
-            for (var x = canvas.width; x > -1; x -= 1) {
+            for (var x = canvas.width - 1; x > -1; x -= 1) {
                 if (data[(y * canvas.width + x) * 4 + 3]) {
                     meta[y].max = Math.max(meta[y].max, x);
                     break;
@@ -407,11 +411,14 @@ Digraph.fromImage = function (
     var change = 1;
     for (var i = 0; i > -1 && i < keys.length; i += change) {
         vertices.push({
-            x: meta[keys[i]][change === 1 ? "min" : "max"],
-            y: keys[i]
+            x: meta[keys[i]][change === 1 ? "min" : "max"] * scale.x,
+            y: keys[i] * scale.y
         });
 
-        if (i === keys.length - 1 && change === 1) change *= -1;
+        if (i === keys.length - 1 && change === 1) {
+            change *= -1;
+            i += 1;
+        }
     }
 
     return new Digraph(vertices);
