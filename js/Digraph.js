@@ -408,32 +408,23 @@ Digraph.fromImage = function (
 
     var vertices = [];
     var keys = Object.keys(meta);
-    var change = 1;
-    for (var i = 0; i > -1 && i < keys.length; i += change) {
-        var j;
-        if (change === 1) {
-            for (j = 1; j < scale.y + (i === keys.length - 1 ? 1 : 2); j += 1) {
-                vertices.push({
-                    x:
-                        meta[keys[i]].min * (scale.x || 1) +
-                        (change === 1 ? 0 : scale.x) +
-                        1,
-                    y: keys[i] * (scale.y || 1) + j
-                });
-            }
-        } else {
-            for (j = scale.y + (i === keys.length - 1 ? 0 : 1); j; j -= 1) {
-                vertices.push({
-                    x:
-                        meta[keys[i]].max * (scale.x || 1) +
-                        (change === 1 ? 0 : scale.x),
-                    y: keys[i] * (scale.y || 1) + j
-                });
-            }
+    var incr = 1;
+    for (var i = 0; i > -1 && i < keys.length; i += incr) {
+        for (
+            var j = incr === 1 ? 1 : scale.y + (i === keys.length - 1 ? 0 : 1);
+            incr === 1 ? j < scale.y + (i === keys.length - 1 ? 1 : 2) : j;
+            j += incr === 1 ? 1 : -1
+        ) {
+            vertices.push({
+                x:
+                    meta[keys[i]][incr === 1 ? "min" : "max"] * (scale.x || 1) +
+                    (incr === 1 ? 1 : scale.x),
+                y: keys[i] * (scale.y || 1) + j
+            });
         }
 
-        if (i === keys.length - 1 && change === 1) {
-            change *= -1;
+        if (i === keys.length - 1 && incr === 1) {
+            incr *= -1;
             i += 1;
         }
     }
