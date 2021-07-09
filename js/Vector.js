@@ -36,9 +36,11 @@ function Vector(x, y, z) {
      * @returns { this } current Vector object
      */
     that.multiply = function (vector) {
-        that.x *= vector.x || 1;
-        that.y *= vector.y || 1;
-        that.z *= vector.z || 1;
+        if (vector) {
+            that.x *= vector.x || 1;
+            that.y *= vector.y || 1;
+            that.z *= vector.z || 1;
+        }
 
         return that;
     };
@@ -88,9 +90,11 @@ function Vector(x, y, z) {
      * @returns { this } current Vector object
      */
     that.add = function (vector) {
-        that.x += vector.x || 0;
-        that.y += vector.y || 0;
-        that.z += vector.z || 0;
+        if (vector) {
+            that.x += vector.x || 0;
+            that.y += vector.y || 0;
+            that.z += vector.z || 0;
+        }
 
         return that;
     };
@@ -102,9 +106,11 @@ function Vector(x, y, z) {
      * @returns { this } current Vector object
      */
     that.subtract = function (vector) {
-        that.x -= vector.x || 0;
-        that.y -= vector.y || 0;
-        that.z -= vector.z || 0;
+        if (vector) {
+            that.x -= vector.x || 0;
+            that.y -= vector.y || 0;
+            that.z -= vector.z || 0;
+        }
 
         return that;
     };
