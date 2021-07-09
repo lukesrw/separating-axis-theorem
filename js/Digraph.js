@@ -162,11 +162,20 @@ function Digraph(vertices) {
      * Draw the digraph onto the context, without stroke/fill
      *
      * @param { CanvasRenderingContext2D } context from canvas
+     * @param { { x?: number, y?: number, z?: number } | Vector } [offset] to change vertex by
      * @param { boolean } [vertex_dots] whether to include vertex dots
      * @returns { this } current digraph
      */
-    that.draw = function (context, vertex_dots) {
+    that.draw = function (context, offset, vertex_dots) {
         context.beginPath();
+
+        offset = Object.assign(
+            {
+                x: 0,
+                y: 0
+            },
+            offset || {}
+        );
 
         if (that.bounds.radius) {
             context.arc(
@@ -193,6 +202,8 @@ function Digraph(vertices) {
             }
         } else {
             that.vertices.forEach(function (vertex) {
+                vertex = vertex.clone().add(offset);
+
                 context.lineTo(vertex.x, vertex.y);
 
                 if (vertex_dots) {
@@ -203,7 +214,7 @@ function Digraph(vertices) {
 
         context.closePath();
 
-        return that;
+        return context;
     };
 
     /**
@@ -410,16 +421,17 @@ Digraph.fromImage = function (
     var keys = Object.keys(meta);
     var incr = 1;
     for (var i = 0; i > -1 && i < keys.length; i += incr) {
-        for (
-            var j = incr === 1 ? 1 : scale.y + (i === keys.length - 1 ? 0 : 1);
-            incr === 1 ? j < scale.y + (i === keys.length - 1 ? 1 : 2) : j;
-            j += incr === 1 ? 1 : -1
-        ) {
+        for (var j = 0; j < 2; j += 1) {
             vertices.push({
                 x:
-                    meta[keys[i]][incr === 1 ? "min" : "max"] * (scale.x || 1) +
-                    (incr === 1 ? 1 : scale.x),
-                y: keys[i] * (scale.y || 1) + j
+                    (meta[keys[i]][incr === 1 ? "min" : "max"] +
+                        (incr === 1 ? 0 : 1)) *
+                    scale.x,
+                y:
+                    keys[i] * scale.y +
+                    ((incr === 1 && j === 0) || (incr !== 1 && j !== 0)
+                        ? 0
+                        : scale.y)
             });
         }
 
