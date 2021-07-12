@@ -8,7 +8,7 @@ function Events() {}
  * @returns { this } current object
  */
 Events.prototype.addEventListener = function (event, callback) {
-    if (event in this.events) {
+    if (typeof this.events === "object" && event in this.events) {
         this.events[event].push(callback);
     } else {
         throw new Error('Invalid Event: "' + event + '"');
@@ -25,7 +25,7 @@ Events.prototype.addEventListener = function (event, callback) {
  * @returns { this } current object
  */
 Events.prototype.removeEventListener = function (event, callback) {
-    if (event in this.events) {
+    if (typeof this.events === "object" && event in this.events) {
         this.events[event] = this.events[event].filter(function (listener) {
             return callback !== listener;
         });
@@ -44,7 +44,7 @@ Events.prototype.removeEventListener = function (event, callback) {
  * @returns { this } current object
  */
 Events.prototype.emit = function (event, detail) {
-    if (event in this.events) {
+    if (typeof this.events === "object" && event in this.events) {
         this.events[event].forEach(function (listener) {
             listener(
                 new CustomEvent(event, {
