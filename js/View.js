@@ -1,8 +1,15 @@
 function View(canvas, width, height) {
     var that = this;
 
+    /**
+     * Clear the current view context
+     *
+     * @returns { this } current View
+     */
     that.clear = function () {
         that.context.clearRect(0, 0, that.canvas.width, that.canvas.height);
+
+        return that;
     };
 
     that.canvas = canvas || document.createElement("canvas");
