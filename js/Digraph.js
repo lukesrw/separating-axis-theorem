@@ -118,6 +118,20 @@ function Digraph(vertices) {
         return Vector.fromPerpendicular(vertex1, vertex2);
     };
 
+    that.isBounds = function () {
+        return (
+            that.vertices.length === 4 &&
+            that.vertices[0].x === that.bounds.x.min &&
+            that.vertices[1].x === that.bounds.x.max &&
+            that.vertices[2].x === that.bounds.x.max &&
+            that.vertices[3].x === that.bounds.x.min &&
+            that.vertices[0].y === that.bounds.y.min &&
+            that.vertices[1].y === that.bounds.y.min &&
+            that.vertices[2].y === that.bounds.y.max &&
+            that.vertices[3].y === that.bounds.y.max
+        );
+    };
+
     /**
      * Determine whether digraphs are touching
      *
@@ -127,6 +141,9 @@ function Digraph(vertices) {
     that.isTouching = function (digraph) {
         // digraphs aren't even bounding
         if (!that.isBounding(digraph, true)) return false;
+
+        // digraphs must be touching if vertices is just bounds
+        if (that.isBounds()) return true;
 
         var target = that;
 
@@ -364,8 +381,8 @@ Digraph.fromImage = function (
     dest_height
 ) {
     var scale = {
-        x: dest_width / src_width,
-        y: dest_height / src_height
+        x: dest_width / src_width || 1,
+        y: dest_height / src_height || 1
     };
     var canvas = document.createElement("canvas");
     canvas.width = src_width || image.width;
@@ -421,7 +438,7 @@ Digraph.fromImage = function (
     var keys = Object.keys(meta);
     var incr = 1;
     for (var i = 0; i > -1 && i < keys.length; i += incr) {
-        for (var j = 0; j < 2; j += 1) {
+        for (var j = 0; j < (scale.y !== 1 ? 2 : 1); j += 1) {
             vertices.push({
                 x:
                     (meta[keys[i]][incr === 1 ? "min" : "max"] +
@@ -455,7 +472,7 @@ Digraph.fromPoint = function (point, radius) {
     return new Digraph([
         point,
         {
-            x: point.x + (radius || 1),
+            x: point.x + (radius || 0.01),
             y: point.y
         }
     ]);
