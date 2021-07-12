@@ -71,6 +71,10 @@ function Digraph(vertices) {
      * @returns { { min: number, max: number } } projection bounds
      */
     that.projectToVector = function (vector) {
+        if (!(vector instanceof Vector)) {
+            throw new Error("Vector must be instance of Vector class");
+        }
+
         var dot = vector.dot(that.vertices[0]);
         var project = {
             min: dot,
@@ -102,6 +106,10 @@ function Digraph(vertices) {
      * @returns { boolean } whether digraphs are bounding
      */
     that.isBounding = function (digraph) {
+        if (!(digraph instanceof Digraph)) {
+            throw new Error("Digraph must be instance of Digraph class");
+        }
+
         return (
             digraph.bounds.x.min <= that.bounds.x.max &&
             digraph.bounds.x.max >= that.bounds.x.min &&
@@ -110,14 +118,31 @@ function Digraph(vertices) {
         );
     };
 
+    /**
+     * Retrieve the axis to use for comparison between two digraphs
+     *
+     * @param { Digraph } digraph to create axis against
+     * @param { { x?: number, y?: number, z?: number } | Vector } [vertex1] to start perpendicular point (for non-circles)
+     * @param { { x?: number, y?: number, z?: number } | Vector } [vertex2] to end perpendiular point (for non-circles)
+     * @returns { Vector } to compare project digraphs onto
+     */
     that.getAxis = function (digraph, vertex1, vertex2) {
         if (that.bounds.radius) {
+            if (!(digraph instanceof Digraph)) {
+                throw new Error("Digraph must be instance of Digraph class");
+            }
+
             return Vector.fromClosest(that.vertices[0], digraph.vertices);
         }
 
         return Vector.fromPerpendicular(vertex1, vertex2);
     };
 
+    /**
+     * Determine whether digraph is purely rectangular bounds representation
+     *
+     * @returns { boolean } whether digraph is just bounds
+     */
     that.isBounds = function () {
         return (
             that.vertices.length === 4 &&
@@ -139,6 +164,10 @@ function Digraph(vertices) {
      * @returns { boolean } whether digraphs are touching
      */
     that.isTouching = function (digraph) {
+        if (!(digraph instanceof Digraph)) {
+            throw new Error("Digraph must be instance of Digraph class");
+        }
+
         // digraphs aren't even bounding
         if (!that.isBounding(digraph, true)) return false;
 
