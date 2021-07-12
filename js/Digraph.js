@@ -172,7 +172,7 @@ function Digraph(vertices) {
         if (!that.isBounding(digraph, true)) return false;
 
         // digraphs must be touching if vertices is just bounds
-        if (that.isBounds()) return true;
+        if (that.isBounds() && digraph.isBounds()) return true;
 
         var target = that;
 
