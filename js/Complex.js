@@ -2,38 +2,58 @@ function Complex(view, digraphs, position) {
     var that = this;
 
     /**
-     * Start listening for events emitted by the Element
+     * Start listening for events emitted by the Complex
      *
      * @param { string } event to listen for
      * @param { function } callback to run on event
-     * @returns { this } current Element object
+     * @returns { this } current Complex object
      */
     that.addEventListener = function (event, callback) {
         return Events.prototype.addEventListener.call(this, event, callback);
     };
 
     /**
-     * Stop listening for events emitted by the Element
+     * Stop listening for events emitted by the Complex
      *
      * @param { string } event to stop listening for
      * @param { function } callback to stop running on event
-     * @returns { this } current Element object
+     * @returns { this } current Complex object
      */
     that.removeEventListener = function (event, callback) {
         return Events.prototype.removeEventListener.call(this, event, callback);
     };
 
+    /**
+     * Execute update function for Complex object
+     *
+     * @returns { this } current Complex object
+     */
     that.update = function () {
-        Events.prototype.emit.call(this, "update");
+        return Events.prototype.emit.call(this, "update");
     };
 
+    /**
+     * Determine whether any child digraphs are touching target
+     *
+     * @param { Digraph } target to test against
+     * @returns { boolean } whether Complex is touching target
+     */
     that.isTouching = function (target) {
-        return (
-            target &&
-            that.digraphs.some(function (digraph) {
-                return digraph.isTouching(target);
-            })
-        );
+        if (target) {
+            if (target instanceof Complex) {
+                return that.digraphs.some(function (child) {
+                    return target.digraphs.some(function (digraph) {
+                        return child.isTouching(digraph);
+                    });
+                });
+            }
+
+            return that.digraphs.some(function (child) {
+                return child.isTouching(target);
+            });
+        }
+
+        return false;
     };
 
     Object.defineProperties(that, {
@@ -126,6 +146,20 @@ function Complex(view, digraphs, position) {
     that.position = position || {};
 }
 
+/**
+ * Create Complex from image (or part of an image)
+ *
+ * @param { View } view to use for canvas/context
+ * @param { { x?: number, y?: number, z?: number } | Vector } position to use for placement of Complex
+ * @param { HTMLImageElement } image to represent
+ * @param { number } [src_x] to start image
+ * @param { number } [src_y] to start image
+ * @param { number } [src_width] to end image
+ * @param { number } [src_height] to end image
+ * @param { number } [dest_width] to display image
+ * @param { number } [dest_height] to display image
+ * @returns { Complex } of image
+ */
 Complex.fromImage = function (
     view,
     position,
