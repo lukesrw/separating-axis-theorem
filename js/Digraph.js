@@ -160,10 +160,19 @@ function Digraph(vertices) {
     /**
      * Determine whether digraphs are touching
      *
-     * @param { Digraph } digraph to test against
+     * @param { Digraph | Complex } digraph to test against
      * @returns { boolean } whether digraphs are touching
      */
     that.isTouching = function (digraph) {
+        /**
+         * Complex support
+         */
+        if (typeof Complex === "function" && digraph instanceof Complex) {
+            return digraph.digraphs.some(function (child) {
+                that.isTouching(child);
+            });
+        }
+
         if (!(digraph instanceof Digraph)) {
             throw new Error("Digraph must be instance of Digraph class");
         }
