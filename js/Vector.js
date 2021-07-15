@@ -21,15 +21,6 @@ function Vector(x, y, z) {
     };
 
     /**
-     * Calculate magnitude of Vector
-     *
-     * @returns { number }
-     */
-    that.getMagnitude = function () {
-        return Math.sqrt(Math.pow(that.x, 2) + Math.pow(that.y, 2));
-    };
-
-    /**
      * Multiply this Vector by another Vector
      *
      * @param { { x?: number, y?: number, z?: number } | Vector } vector to multiply by
@@ -51,7 +42,7 @@ function Vector(x, y, z) {
      * @returns { Vector } current Vector object
      */
     that.normalize = function () {
-        var magnitude = that.getMagnitude();
+        var magnitude = that.magnitude;
 
         if (magnitude === 0) return that;
 
@@ -206,6 +197,38 @@ function Vector(x, y, z) {
                         difference: difference
                     });
                 }
+            }
+        },
+        magnitude: {
+            get: function () {
+                return Math.sqrt(Math.pow(that.x, 2) + Math.pow(that.y, 2));
+            },
+            set: function (magnitude) {
+                var direction = that.direction;
+
+                that.x = Math.cos(direction * magnitude);
+                that.y = Math.sin(direction * magnitude);
+            }
+        },
+        direction: {
+            get: function () {
+                return Math.atan2(that.y, that.x);
+            },
+            set: function (direction) {
+                var magnitude = that.magnitude;
+
+                that.x = Math.cos(direction) * magnitude;
+                that.y = Math.sin(direction) * magnitude;
+            }
+        },
+        angle: {
+            get: function () {
+                return (
+                    (360 + Math.round((180 * that.direction) / Math.PI)) % 360
+                );
+            },
+            set: function (angle) {
+                that.direction = angle * (Math.PI / 180);
             }
         }
     });
